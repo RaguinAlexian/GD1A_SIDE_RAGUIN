@@ -4,7 +4,8 @@
 <head>
     <meta charset="UTF-8" />
     <title>Mon 1er jeu Phaser</title>
-    <script src="//cdn.jsdelivr.net/npm/phaser@3.11.0/dist/phaser.js"></script>
+    <script src="//cdn.jsdelivr.net/npm/phaser@3.55.2/dist/phaser.js"></script>
+    </script>
     <style type="text/css">
         body {
             margin: 0;
@@ -25,7 +26,7 @@
                 default: 'arcade',
                 arcade: {
                     gravity: {
-                        y: 300
+                        y: 500
                     },
                     debug: false
                 }
@@ -56,8 +57,7 @@
         var scoreText;
         var bombs;
         var gameOver = false;
-        var saut = false;
-        var double = 0;
+        var saut = 0;
 
         var gamepad;
         var camera;
@@ -65,6 +65,7 @@
         var goRight = false;
         var goDown = false;
         var goUp = false;
+        var special = true;
 
         function create() {
             this.add.image(400, 300, 'sky');
@@ -173,6 +174,37 @@
             gameOver = true;
         }
 
+        function action() {
+            if (saut == 1 && !(player.body.touching.down)) {
+                player.setVelocityY(-310);
+                saut = 2;
+            }
+            else if (special == true && player.body.touching.down && goRight == true) {
+                player.setVelocityX(1500);
+                this.time.addEvent({
+                    delay: 200,
+                    callback: () => {
+                        special = false;
+                    },
+                    loop: false
+                })
+            }
+            else if (special == true && player.body.touching.down && goLeft == true) {
+                player.setVelocityX(-1500);
+                this.time.addEvent({
+                    delay: 200,
+                    callback: () => {
+                        special = false;
+                    },
+                    loop: false
+                })
+                game.time.events.add(Phaser.Timer.SECOND * 5, explosion, this);
+            }
+            else if (special == true && saut != 1) {
+                //attaque
+            }
+        }
+
         function update() {
             if (gameOver) {
                 return;
@@ -186,19 +218,20 @@
             if (gamepad != null) {
                 if (gamepad.left) {
                     goLeft = true;
-                } else if (gamepad.right) {
+                }
+                if (gamepad.right) {
                     goRight = true;
-                } else if (gamepad.up) {
+                }
+                if (gamepad.up) {
                     goUp = true;
-                } else if (gamepad.down) {
-                    goDown = true;
-                } else if (gamepad.down == false) {
-                    goDown = false;
-                } else if (gamepad.up == false) {
+                }
+                if (gamepad.up == false) {
                     goUp = false;
-                } else if (gamepad.left == false) {
+                }
+                if (gamepad.left == false) {
                     goLeft = false;
-                } else if (gamepad.right == false) {
+                }
+                if (gamepad.right == false) {
                     goRight = false;
                 } else {
                     player.setVelocityX(0);
@@ -206,68 +239,85 @@
                 }
             }
 
-
             if (gamepad == null) {
                 if (cursors.left.isDown) { //si la touche gauche est appuyée
                     goLeft = true;
-                } else if (cursors.right.isDown) { //sinon si la touche droite est appuyée
-                    goRight = true;
-                } else if (cursors.up.isDown) {
-                    goUp = true;
-                } else if (cursors.down.isDown) {
-                    goDown = true;
                 }
-            if (cursors.left.isUp) {
-                goLeft = false;
-            } else if (cursors.right.isUp) {
-                goRight = false;
-            } else if (cursors.up.isUp) {
-                goUp = false;
-            } else if (cursors.down.isUp) {
-                goDown = false;
-            } else {
-                player.setVelocityX(0);
-                player.anims.play('turn');
+                if (cursors.right.isDown) { //sinon si la touche droite est appuyée
+                    goRight = true;
+                }
+                if (cursors.up.isDown) {
+                    goUp = true;
+                }
+                if (cursors.left.isUp) {
+                    goLeft = false;
+                }
+                if (cursors.right.isUp) {
+                    goRight = false;
+                }
+                if (cursors.up.isUp) {
+                    goUp = false;
+                }
+                else {
+                    player.setVelocityX(0);
+                    player.anims.play('turn');
                 }
             }
 
-
+            if (special == false) {
+                // setInterval(() => {
+                //     special = true;
+                // }, 10000);
+                this.time.addEvent({
+                    delay: 10000,
+                    callback: () => {
+                        special = true;
+                    },
+                    loop: false
+                })
+            }
 
             if (goLeft == true) {
                 player.setVelocityX(-200); //alors vitesse négative en X
                 player.anims.play('left', true);
-            } else if (goRight == true) {
+                if (goUp == true && player.body.touching.down) {
+                    player.setVelocityY(-310);
+                    saut = 1;
+                }
+                if (cursors.space.isDown) {
+                    action();
+                }
+            }
+            else if (goRight == true) {
                 player.setVelocityX(200); //alors vitesse positive en X
                 player.anims.play('right', true);
-            } else if (goUp == true && player.body.touching.down) {
+                if (goUp == true && player.body.touching.down) {
+                    player.setVelocityY(-310);
+                    saut = 1;
+                }
+                if (cursors.space.isDown) {
+                    action();
+                }
+            }
+            else if (goUp == true && player.body.touching.down) {
                 player.setVelocityY(-310);
-            } else if (goDown == true && player.body.touching.down) {
-                player.setVelocityY(310);
-            } else if (goLeft == false) {
+                saut = 1;
+            }
+            else if (cursors.space.isDown) {
+                action();
+            }
+            else if (goLeft == false) {
                 player.setVelocityX(0);
                 player.anims.play('turn');
-            } else if (goRight == false) {
+            }
+            else if (goRight == false) {
                 player.setVelocityX(0);
                 player.anims.play('turn');
-            } else if (goUp == false) {
-                player.setVelocityY(0);
-                player.anims.play('turn');
-            } else if (goDown == false) {
+            }
+            else if (goUp == false) {
                 player.setVelocityY(0);
                 player.anims.play('turn');
             }
-            if (cursors.up.isDown && player.body.touching.down) {
-                //si touche haut appuyée ET que le perso touche le sol
-                player.setVelocityY(-310); //alors vitesse verticale négative
-                //(on saute)
-                saut = true;
-            } else if (player.body.touching.down) {
-                double = 0;
-                saut = false;
-            } else if (saut == true && cursors.up.isDown && double == 0) {
-                player.setVelocityY(-310);
-                double = 1;
-            } //Frame trop chiante
         }
     </script>
 </body>
