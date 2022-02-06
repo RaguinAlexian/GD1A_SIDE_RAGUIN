@@ -1,6 +1,6 @@
 # GD1A_SIDE_RAGUIN
 
-Les touches : 
+Les touches : <br>
 Déplacement gauche : flèche gauche clavier et pad gauche manette xbox <br>
 Déplacement droite : flèche droite claveir et pad droite manette xbox <br>
 Bouton action (dash / double saut) : Barre espace clavier et bouton x sur manette xbox <br>
